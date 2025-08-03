@@ -2,24 +2,18 @@
 
 namespace App\Listeners;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
+use App\Events\OrderCreated;
+use App\Jobs\SendOrderConfirmationEmail;
+use App\Jobs\SendAdminOrderNotification;
 
 class SendOrderCreatedNotification
 {
-    /**
-     * Create the event listener.
-     */
-    public function __construct()
+    public function handle(OrderCreated $event): void
     {
-        //
-    }
+        // Send customer confirmation email
+        SendOrderConfirmationEmail::dispatch($event->order);
 
-    /**
-     * Handle the event.
-     */
-    public function handle(object $event): void
-    {
-        //
+        // Send admin notification
+        SendAdminOrderNotification::dispatch($event->order);
     }
 }
