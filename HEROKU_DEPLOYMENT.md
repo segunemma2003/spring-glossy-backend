@@ -154,7 +154,7 @@ git push heroku main
 heroku run php artisan migrate --force
 
 # Create storage link
-heroku run php artisan storage:link
+# Note: storage:link not needed for S3 storage
 
 # Optimize application
 heroku run php artisan config:cache
