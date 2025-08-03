@@ -40,10 +40,11 @@ return [
     'secret_key' => env('PAYSTACK_SECRET_KEY'),
 ],
 
-'moniepoint' => [
-    'public_key' => env('MONIEPOINT_PUBLIC_KEY'),
-    'secret_key' => env('MONIEPOINT_SECRET_KEY'),
-    'merchant_id' => env('MONIEPOINT_MERCHANT_ID'),
+'monnify' => [
+    'public_key' => env('MONNIFY_PUBLIC_KEY'),
+    'secret_key' => env('MONNIFY_SECRET_KEY'),
+    'merchant_id' => env('MONNIFY_MERCHANT_ID'),
+    'contract_code' => env('MONNIFY_CONTRACT_CODE'),
 ],
 
 's3' => [

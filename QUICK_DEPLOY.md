@@ -7,7 +7,7 @@ Your Spring Glossy Cosmetics application is ready for deployment with your speci
 -   **AWS S3 Bucket:** `compass-second-a45b0e0a`
 -   **Email Service:** SMTP (Gmail recommended)
 -   **Frontend URL:** `https://springglossy.com`
--   **Payment Gateways:** Paystack + Moniepoint + Bank Transfer
+-   **Payment Gateways:** Paystack + Monnify + Bank Transfer
 
 ## 🚀 **Deploy Now:**
 
@@ -56,10 +56,10 @@ You'll need to set up your payment gateway credentials:
 -   Get your API keys from: https://dashboard.paystack.com/settings/developer
 -   Set webhook URL: `https://your-app-name.herokuapp.com/api/webhooks/paystack`
 
-**Moniepoint:**
+**Monnify:**
 
--   Get your API keys from: https://dashboard.moniepoint.com/settings/api
--   Set webhook URL: `https://your-app-name.herokuapp.com/api/webhooks/moniepoint`
+-   Get your API keys from: https://dashboard.monnify.com/settings/api
+-   Set webhook URL: `https://your-app-name.herokuapp.com/api/webhooks/monnify`
 
 ## 🔧 **Manual Configuration (If Needed):**
 

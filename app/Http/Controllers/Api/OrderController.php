@@ -7,7 +7,7 @@ use App\Mail\OrderCreated;
 use App\Models\Order;
 use App\Models\Product;
 use App\Services\PaystackService;
-use App\Services\MoniepointService;
+use App\Services\MonnifyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -17,12 +17,12 @@ use Illuminate\Support\Str;
 class OrderController extends Controller
 {
     protected $paystackService;
-    protected $moniepointService;
+    protected $monnifyService;
 
-    public function __construct(PaystackService $paystackService, MoniepointService $moniepointService)
+    public function __construct(PaystackService $paystackService, MonnifyService $monnifyService)
     {
         $this->paystackService = $paystackService;
-        $this->moniepointService = $moniepointService;
+        $this->monnifyService = $monnifyService;
     }
 
     public function index(Request $request)
@@ -117,9 +117,9 @@ class OrderController extends Controller
                 }
             }
 
-            // If payment method is Paystack or Moniepoint, initialize payment
-            if (in_array($request->payment_method, ['paystack', 'moniepoint'])) {
-                $service = $request->payment_method === 'paystack' ? $this->paystackService : $this->moniepointService;
+            // If payment method is Paystack or Monnify, initialize payment
+            if (in_array($request->payment_method, ['paystack', 'monnify'])) {
+                $service = $request->payment_method === 'paystack' ? $this->paystackService : $this->monnifyService;
 
                 $paymentData = $service->initializePayment([
                     'email' => $request->user()->email,
@@ -135,7 +135,7 @@ class OrderController extends Controller
                 ]);
 
                 if ($paymentData['status']) {
-                    $referenceField = $request->payment_method === 'paystack' ? 'paystack_reference' : 'moniepoint_reference';
+                    $referenceField = $request->payment_method === 'paystack' ? 'paystack_reference' : 'monnify_reference';
                     $order->update([
                         $referenceField => $paymentData['data']['reference'],
                     ]);

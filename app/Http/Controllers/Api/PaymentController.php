@@ -5,20 +5,21 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Services\PaystackService;
-use App\Services\MoniepointService;
+use App\Services\MonnifyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class PaymentController extends Controller
 {
     protected $paystackService;
-    protected $moniepointService;
+    protected $monnifyService;
 
-    public function __construct(PaystackService $paystackService, MoniepointService $moniepointService)
+    public function __construct(PaystackService $paystackService, MonnifyService $monnifyService)
     {
         $this->paystackService = $paystackService;
-        $this->moniepointService = $moniepointService;
+        $this->monnifyService = $monnifyService;
     }
 
     /**
@@ -49,25 +50,25 @@ class PaymentController extends Controller
     }
 
     /**
-     * Moniepoint webhook handler
+     * Monnify webhook handler
      */
-    public function moniepointWebhook(Request $request)
+    public function monnifyWebhook(Request $request)
     {
-        Log::info('Moniepoint webhook received', $request->all());
+        Log::info('Monnify webhook received', $request->all());
 
         $payload = $request->getContent();
-        $signature = $request->header('X-Moniepoint-Signature');
+        $signature = $request->header('MNFY-SIGNATURE');
 
         // Verify webhook signature
-        if (!$this->moniepointService->verifyWebhookSignature($payload, $signature)) {
-            Log::error('Moniepoint webhook signature verification failed');
+        if (!$this->monnifyService->verifyWebhookSignature($payload, $signature)) {
+            Log::error('Monnify webhook signature verification failed');
             return response()->json(['message' => 'Invalid signature'], 400);
         }
 
         $data = $request->all();
 
-        if ($data['status'] === 'success' && $data['event'] === 'transaction.completed') {
-            return $this->handleSuccessfulPayment($data['reference'], 'moniepoint');
+        if ($data['paymentStatus'] === 'PAID') {
+            return $this->handleSuccessfulPayment($data['paymentReference'], 'monnify');
         }
 
         return response()->json(['message' => 'Webhook processed']);
@@ -80,7 +81,7 @@ class PaymentController extends Controller
     {
         $request->validate([
             'reference' => 'required|string',
-            'payment_method' => 'required|in:paystack,moniepoint,transfer'
+            'payment_method' => 'required|in:paystack,monnify,transfer'
         ]);
 
         $reference = $request->reference;
@@ -88,7 +89,7 @@ class PaymentController extends Controller
 
         $order = Order::where('order_number', $reference)
             ->orWhere('paystack_reference', $reference)
-            ->orWhere('moniepoint_reference', $reference)
+            ->orWhere('monnify_reference', $reference)
             ->first();
 
         if (!$order) {
@@ -107,7 +108,7 @@ class PaymentController extends Controller
         // Verify payment with payment gateway
         $verificationResult = $paymentMethod === 'paystack'
             ? $this->paystackService->verifyPayment($reference)
-            : $this->moniepointService->verifyPayment($reference);
+            : $this->monnifyService->verifyPayment($reference);
 
         if ($verificationResult['status'] && $verificationResult['data']['status'] === 'success') {
             return $this->handleSuccessfulPayment($reference, $paymentMethod);
@@ -129,7 +130,7 @@ class PaymentController extends Controller
         return DB::transaction(function () use ($reference, $paymentMethod) {
             $order = Order::where('order_number', $reference)
                 ->orWhere('paystack_reference', $reference)
-                ->orWhere('moniepoint_reference', $reference)
+                ->orWhere('monnify_reference', $reference)
                 ->first();
 
             if (!$order) {
@@ -153,8 +154,8 @@ class PaymentController extends Controller
             ]);
 
             // Send confirmation emails
-            \Mail::to($order->user)->queue(new \App\Mail\OrderCreated($order));
-            \Mail::to(config('mail.admin_email', 'admin@springglossy.com'))
+            Mail::to($order->user)->queue(new \App\Mail\OrderCreated($order));
+            Mail::to(config('app.admin_email', 'admin@springglossy.com'))
                 ->queue(new \App\Mail\AdminOrderNotification($order));
 
             Log::info("Payment successful for order: {$order->order_number} via {$paymentMethod}");
@@ -180,10 +181,10 @@ class PaymentController extends Controller
                     'logo' => 'https://paystack.com/static/img/logo-blue.svg'
                 ],
                 [
-                    'id' => 'moniepoint',
-                    'name' => 'Moniepoint',
-                    'description' => 'Pay with Moniepoint wallet or card',
-                    'logo' => 'https://moniepoint.com/logo.png'
+                    'id' => 'monnify',
+                    'name' => 'Monnify',
+                    'description' => 'Pay with Monnify wallet or card',
+                    'logo' => 'https://monnify.com/logo.png'
                 ],
                 [
                     'id' => 'transfer',

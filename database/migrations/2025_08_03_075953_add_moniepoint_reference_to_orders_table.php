@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->string('moniepoint_reference')->nullable()->after('paystack_reference');
+            $table->string('monnify_reference')->nullable()->after('paystack_reference');
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->dropColumn('moniepoint_reference');
+            $table->dropColumn('monnify_reference');
         });
     }
 };
