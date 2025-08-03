@@ -1,0 +1,165 @@
+{
+    "name": "spring-glossy-cosmetics",
+    "description": "Spring Glossy Cosmetics E-commerce Platform",
+    "repository": "https://github.com/segunemma2003/spring-glossy-backend",
+    "logo": "https://node-js-sample.herokuapp.com/node.png",
+    "keywords": ["laravel", "ecommerce", "cosmetics", "php"],
+    "env": {
+        "APP_NAME": {
+            "description": "Application name",
+            "value": "Spring Glossy Cosmetics"
+        },
+        "APP_ENV": {
+            "description": "Application environment",
+            "value": "production"
+        },
+        "APP_KEY": {
+            "description": "Application key",
+            "generator": "secret"
+        },
+        "APP_DEBUG": {
+            "description": "Application debug mode",
+            "value": "false"
+        },
+        "APP_URL": {
+            "description": "Application URL",
+            "value": "https://springglossy.com"
+        },
+        "LOG_CHANNEL": {
+            "description": "Log channel",
+            "value": "stack"
+        },
+        "LOG_DEPRECATIONS_CHANNEL": {
+            "description": "Log deprecations channel",
+            "value": "null"
+        },
+        "LOG_LEVEL": {
+            "description": "Log level",
+            "value": "debug"
+        },
+        "DB_CONNECTION": {
+            "description": "Database connection",
+            "value": "pgsql"
+        },
+        "BROADCAST_DRIVER": {
+            "description": "Broadcast driver",
+            "value": "log"
+        },
+        "CACHE_DRIVER": {
+            "description": "Cache driver",
+            "value": "redis"
+        },
+        "FILESYSTEM_DISK": {
+            "description": "Filesystem disk",
+            "value": "s3"
+        },
+        "QUEUE_CONNECTION": {
+            "description": "Queue connection",
+            "value": "redis"
+        },
+        "SESSION_DRIVER": {
+            "description": "Session driver",
+            "value": "redis"
+        },
+        "SESSION_LIFETIME": {
+            "description": "Session lifetime",
+            "value": "120"
+        },
+        "MAIL_MAILER": {
+            "description": "Mail driver",
+            "value": "smtp"
+        },
+        "MAIL_HOST": {
+            "description": "Mail host",
+            "value": "smtp.resend.com"
+        },
+        "MAIL_PORT": {
+            "description": "Mail port",
+            "value": "587"
+        },
+        "MAIL_USERNAME": {
+            "description": "Mail username",
+            "value": "resend"
+        },
+        "MAIL_PASSWORD": {
+            "description": "Mail password",
+            "required": true
+        },
+        "MAIL_ENCRYPTION": {
+            "description": "Mail encryption",
+            "value": "tls"
+        },
+        "MAIL_FROM_ADDRESS": {
+            "description": "Mail from address",
+            "value": "noreply@springglossy.com.ng"
+        },
+        "MAIL_FROM_NAME": {
+            "description": "Mail from name",
+            "value": "Spring Glossy Cosmetics"
+        },
+        "PAYSTACK_PUBLIC_KEY": {
+            "description": "Paystack public key",
+            "required": false
+        },
+        "PAYSTACK_SECRET_KEY": {
+            "description": "Paystack secret key",
+            "required": false
+        },
+        "MONNIFY_PUBLIC_KEY": {
+            "description": "Monnify public key",
+            "required": false
+        },
+        "MONNIFY_SECRET_KEY": {
+            "description": "Monnify secret key",
+            "required": false
+        },
+        "MONNIFY_MERCHANT_ID": {
+            "description": "Monnify merchant ID",
+            "required": false
+        },
+        "MONNIFY_CONTRACT_CODE": {
+            "description": "Monnify contract code",
+            "required": false
+        },
+        "AWS_ACCESS_KEY_ID": {
+            "description": "AWS access key ID",
+            "required": true
+        },
+        "AWS_SECRET_ACCESS_KEY": {
+            "description": "AWS secret access key",
+            "required": true
+        },
+        "AWS_DEFAULT_REGION": {
+            "description": "AWS default region",
+            "value": "us-east-1"
+        },
+        "AWS_BUCKET": {
+            "description": "AWS S3 bucket name",
+            "required": true
+        },
+        "AWS_URL": {
+            "description": "AWS S3 URL",
+            "required": true
+        },
+        "AWS_USE_PATH_STYLE_ENDPOINT": {
+            "description": "AWS S3 path style endpoint",
+            "value": "true"
+        }
+    },
+    "addons": [
+        {
+            "plan": "heroku-postgresql:mini"
+        },
+        {
+            "plan": "heroku-redis:mini"
+        }
+    ],
+    "buildpacks": [
+        {
+            "url": "heroku/php"
+        }
+    ],
+    "scripts": {
+        "postdeploy": "php artisan migrate --force"
+    }
+}
