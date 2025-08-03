@@ -47,7 +47,7 @@
         },
         "CACHE_DRIVER": {
             "description": "Cache driver",
-            "value": "redis"
+            "value": "database"
         },
         "FILESYSTEM_DISK": {
             "description": "Filesystem disk",
@@ -55,11 +55,11 @@
         },
         "QUEUE_CONNECTION": {
             "description": "Queue connection",
-            "value": "redis"
+            "value": "database"
         },
         "SESSION_DRIVER": {
             "description": "Session driver",
-            "value": "redis"
+            "value": "database"
         },
         "SESSION_LIFETIME": {
             "description": "Session lifetime",
@@ -149,9 +149,6 @@
     "addons": [
         {
             "plan": "heroku-postgresql:mini"
-        },
-        {
-            "plan": "heroku-redis:mini"
         }
     ],
     "buildpacks": [
