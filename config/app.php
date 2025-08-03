@@ -76,7 +76,7 @@ return [
     |
     */
 
-    'admin_email' => env('ADMIN_EMAIL', 'admin@springglossy.com'),
+    'admin_email' => env('ADMIN_EMAIL', 'kemisolajim2018@gmail.com'),
 
     /*
     |--------------------------------------------------------------------------
