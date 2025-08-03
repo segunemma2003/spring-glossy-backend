@@ -66,7 +66,8 @@
         },
         "platform": {
             "ext-redis": "5.3.7"
-        }
+        },
+        "process-timeout": 600
     },
     "minimum-stability": "stable",
     "prefer-stable": true
