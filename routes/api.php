@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\WishlistController;
+use App\Http\Controllers\Api\SettingController;
+use App\Http\Controllers\Api\ContactController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -21,6 +23,13 @@ Route::post('/webhooks/monnify', [PaymentController::class, 'monnifyWebhook']);
 
 // Payment methods (public)
 Route::get('/payment-methods', [PaymentController::class, 'getPaymentMethods']);
+
+// Settings (public)
+Route::get('/settings', [SettingController::class, 'index']);
+Route::get('/settings/{key}', [SettingController::class, 'show']);
+
+// Contact form (public)
+Route::post('/contact', [ContactController::class, 'store']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
