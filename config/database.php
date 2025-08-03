@@ -158,11 +158,6 @@ return [
             'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_DB', '0'),
-            'scheme' => env('REDIS_SCHEME', 'tcp'),
-            'ssl' => [
-                'verify_peer' => false,
-                'verify_peer_name' => false,
-            ],
         ],
 
         'cache' => [
@@ -172,11 +167,6 @@ return [
             'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_CACHE_DB', '1'),
-            'scheme' => env('REDIS_SCHEME', 'tcp'),
-            'ssl' => [
-                'verify_peer' => false,
-                'verify_peer_name' => false,
-            ],
         ],
 
     ],

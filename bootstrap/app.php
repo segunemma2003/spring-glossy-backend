@@ -17,7 +17,4 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })
-    ->withProviders([
-        App\Providers\RedisServiceProvider::class,
-    ])
     ->create();
