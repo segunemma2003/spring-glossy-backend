@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "93afc836fe3e9ff21915c8ed947fcbc6",
+    "content-hash": "8eb66269eb620082c17dde18b19b506e",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -4214,6 +4214,62 @@
                 }
             ],
             "time": "2024-07-20T21:41:07+00:00"
+        },
+        {
+            "name": "praisedare/monnify-sdk",
+            "version": "0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/praisedare/monnify-sdk.git",
+                "reference": "aa2972277cff4df57ec4c44ffb65ddacd12ce5f6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/praisedare/monnify-sdk/zipball/aa2972277cff4df57ec4c44ffb65ddacd12ce5f6",
+                "reference": "aa2972277cff4df57ec4c44ffb65ddacd12ce5f6",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "guzzlehttp/guzzle": "^7.0",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "mockery/mockery": "^1.6",
+                "phpstan/phpstan": "^1.10",
+                "phpunit/phpunit": "^10.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "PraiseDare\\Monnify\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Praise Dare",
+                    "email": "praisedare27@gmail.com"
+                }
+            ],
+            "description": "PHP SDK for Monnify Payment Gateway Integration",
+            "keywords": [
+                "Nigeria",
+                "gateway",
+                "monnify",
+                "payment",
+                "php",
+                "sdk"
+            ],
+            "support": {
+                "issues": "https://github.com/praisedare/monnify-sdk/issues",
+                "source": "https://github.com/praisedare/monnify-sdk/tree/0.3"
+            },
+            "time": "2025-07-23T19:03:49+00:00"
         },
         {
             "name": "psr/cache",

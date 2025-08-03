@@ -67,9 +67,16 @@ class PaymentController extends Controller
 
         $data = $request->all();
 
+        // Check if payment is successful
         if ($data['paymentStatus'] === 'PAID') {
             return $this->handleSuccessfulPayment($data['paymentReference'], 'monnify');
         }
+
+        // Log other payment statuses for monitoring
+        Log::info('Monnify payment status: ' . $data['paymentStatus'], [
+            'reference' => $data['paymentReference'],
+            'status' => $data['paymentStatus']
+        ]);
 
         return response()->json(['message' => 'Webhook processed']);
     }
@@ -155,7 +162,7 @@ class PaymentController extends Controller
 
             // Send confirmation emails
             Mail::to($order->user)->queue(new \App\Mail\OrderCreated($order));
-            Mail::to(config('app.admin_email', 'admin@springglossy.com'))
+            Mail::to(config('app.admin_email', 'kemisolajim2018@gmail.com'))
                 ->queue(new \App\Mail\AdminOrderNotification($order));
 
             Log::info("Payment successful for order: {$order->order_number} via {$paymentMethod}");

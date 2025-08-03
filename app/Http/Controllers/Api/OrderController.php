@@ -1,10 +1,14 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendOrderConfirmationEmail;
+use App\Jobs\SendAdminOrderNotification;
 use App\Mail\AdminOrderNotification;
 use App\Mail\OrderCreated;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Services\PaystackService;
 use App\Services\MonnifyService;
@@ -28,9 +32,9 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         $orders = $request->user()->orders()
-            ->with(['items.product'])
+            ->with('items.product')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(10);
 
         return response()->json($orders);
     }
@@ -39,47 +43,46 @@ class OrderController extends Controller
     {
         $request->validate([
             'items' => 'required|array|min:1',
-            'items.*.id' => 'required|exists:products,id',
+            'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
             'shipping_address' => 'required|array',
             'shipping_address.address' => 'required|string',
             'shipping_address.city' => 'required|string',
             'shipping_address.state' => 'required|string',
-            'shipping_address.phone' => 'required|string',
-            'payment_method' => 'required|in:paystack,moniepoint,transfer',
-            'receipt' => 'required_if:payment_method,transfer|file|mimes:jpeg,png,jpg,pdf|max:5120', // 5MB max
+            'shipping_address.postal_code' => 'required|string',
+            'shipping_address.country' => 'required|string',
+            'payment_method' => 'required|in:paystack,monnify,transfer',
+            'notes' => 'nullable|string',
+            'receipt' => 'required_if:payment_method,transfer|file|mimes:jpeg,png,jpg,pdf|max:2048',
         ]);
 
         return DB::transaction(function () use ($request) {
             // Calculate totals
-            $subtotal = 0;
             $orderItems = [];
+            $subtotal = 0;
 
             foreach ($request->items as $item) {
-                $product = Product::findOrFail($item['id']);
+                $product = Product::findOrFail($item['product_id']);
 
-                // Check stock
                 if ($product->stock_quantity < $item['quantity']) {
                     return response()->json([
-                        'message' => "Insufficient stock for {$product->name}. Available: {$product->stock_quantity}",
+                        'message' => "Insufficient stock for {$product->name}. Available: {$product->stock_quantity}"
                     ], 400);
                 }
 
-                $total = $product->price * $item['quantity'];
+                $total = $product->sale_price ? $product->sale_price * $item['quantity'] : $product->price * $item['quantity'];
                 $subtotal += $total;
 
                 $orderItems[] = [
                     'product_id' => $product->id,
-                    'product_name' => $product->name,
-                    'product_sku' => $product->sku,
                     'quantity' => $item['quantity'],
-                    'price' => $product->price,
+                    'price' => $product->sale_price ?: $product->price,
                     'total' => $total,
                 ];
             }
 
             $taxAmount = $subtotal * 0.075; // 7.5% tax
-            $shippingFee = 2000; // Fixed shipping fee
+            $shippingFee = 1000; // Fixed shipping fee
             $totalAmount = $subtotal + $taxAmount + $shippingFee;
 
             // Create order
@@ -93,6 +96,7 @@ class OrderController extends Controller
                 'shipping_fee' => $shippingFee,
                 'total_amount' => $totalAmount,
                 'shipping_address' => $request->shipping_address,
+                'notes' => $request->notes,
             ]);
 
             // Create order items and update stock
@@ -123,14 +127,14 @@ class OrderController extends Controller
 
                 $paymentData = $service->initializePayment([
                     'email' => $request->user()->email,
-                    'amount' => $request->payment_method === 'paystack' ? $totalAmount * 100 : $totalAmount, // Paystack expects kobo, Moniepoint expects naira
+                    'amount' => $request->payment_method === 'paystack' ? $totalAmount * 100 : $totalAmount, // Paystack expects kobo, Monnify expects naira
                     'reference' => $order->order_number,
                     'callback_url' => config('app.frontend_url') . '/checkout/success?orderId=' . $order->order_number,
                     'description' => 'Payment for order ' . $order->order_number,
-                    'customer_name' => $request->user()->full_name,
+                    'customer_name' => $request->user()->name,
                     'metadata' => [
                         'order_id' => $order->id,
-                        'customer_name' => $request->user()->full_name,
+                        'customer_name' => $request->user()->name,
                     ],
                 ]);
 
@@ -142,7 +146,7 @@ class OrderController extends Controller
 
                     return response()->json([
                         'order' => $order->load('items.product'),
-                        'payment_url' => $paymentData['data']['authorization_url'] ?? $paymentData['data']['checkout_url'],
+                        'payment_url' => $paymentData['data']['checkout_url'] ?? $paymentData['data']['authorization_url'],
                         'payment_method' => $request->payment_method,
                     ], 201);
                 } else {
@@ -163,7 +167,7 @@ class OrderController extends Controller
 
             // Send emails asynchronously
             Mail::to($request->user())->queue(new OrderCreated($order));
-            Mail::to(config('mail.admin_email', 'admin@springglossy.com'))
+            Mail::to(config('app.admin_email', 'kemisolajim2018@gmail.com'))
                 ->queue(new AdminOrderNotification($order));
 
             // For bank transfer, return success with bank details
