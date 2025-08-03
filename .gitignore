@@ -3,6 +3,8 @@
 .env
 .env.backup
 .env.production
+.env.local
+.env.staging
 .phpactor.json
 .phpunit.result.cache
 /.fleet
@@ -24,3 +26,36 @@ Homestead.yaml
 npm-debug.log
 Thumbs.db
 yarn-error.log
+
+# Additional security files
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets/
+credentials/
+config/secrets.php
+storage/oauth-*.key
+storage/oauth-*.txt
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
