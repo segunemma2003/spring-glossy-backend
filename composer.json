@@ -62,6 +62,9 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "platform": {
+            "ext-redis": "5.3.7"
         }
     },
     "minimum-stability": "stable",
