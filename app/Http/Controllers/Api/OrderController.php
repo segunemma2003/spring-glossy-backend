@@ -7,6 +7,7 @@ use App\Mail\OrderCreated;
 use App\Models\Order;
 use App\Models\Product;
 use App\Services\PaystackService;
+use App\Services\MoniepointService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -16,10 +17,12 @@ use Illuminate\Support\Str;
 class OrderController extends Controller
 {
     protected $paystackService;
+    protected $moniepointService;
 
-    public function __construct(PaystackService $paystackService)
+    public function __construct(PaystackService $paystackService, MoniepointService $moniepointService)
     {
         $this->paystackService = $paystackService;
+        $this->moniepointService = $moniepointService;
     }
 
     public function index(Request $request)
@@ -43,7 +46,7 @@ class OrderController extends Controller
             'shipping_address.city' => 'required|string',
             'shipping_address.state' => 'required|string',
             'shipping_address.phone' => 'required|string',
-            'payment_method' => 'required|in:paystack,transfer',
+            'payment_method' => 'required|in:paystack,moniepoint,transfer',
             'receipt' => 'required_if:payment_method,transfer|file|mimes:jpeg,png,jpg,pdf|max:5120', // 5MB max
         ]);
 
@@ -114,13 +117,17 @@ class OrderController extends Controller
                 }
             }
 
-            // If payment method is Paystack, initialize payment
-            if ($request->payment_method === 'paystack') {
-                $paymentData = $this->paystackService->initializePayment([
+            // If payment method is Paystack or Moniepoint, initialize payment
+            if (in_array($request->payment_method, ['paystack', 'moniepoint'])) {
+                $service = $request->payment_method === 'paystack' ? $this->paystackService : $this->moniepointService;
+
+                $paymentData = $service->initializePayment([
                     'email' => $request->user()->email,
-                    'amount' => $totalAmount * 100, // Paystack expects amount in kobo
+                    'amount' => $request->payment_method === 'paystack' ? $totalAmount * 100 : $totalAmount, // Paystack expects kobo, Moniepoint expects naira
                     'reference' => $order->order_number,
                     'callback_url' => config('app.frontend_url') . '/checkout/success?orderId=' . $order->order_number,
+                    'description' => 'Payment for order ' . $order->order_number,
+                    'customer_name' => $request->user()->full_name,
                     'metadata' => [
                         'order_id' => $order->id,
                         'customer_name' => $request->user()->full_name,
@@ -128,13 +135,15 @@ class OrderController extends Controller
                 ]);
 
                 if ($paymentData['status']) {
+                    $referenceField = $request->payment_method === 'paystack' ? 'paystack_reference' : 'moniepoint_reference';
                     $order->update([
-                        'paystack_reference' => $paymentData['data']['reference'],
+                        $referenceField => $paymentData['data']['reference'],
                     ]);
 
                     return response()->json([
                         'order' => $order->load('items.product'),
-                        'payment_url' => $paymentData['data']['authorization_url'],
+                        'payment_url' => $paymentData['data']['authorization_url'] ?? $paymentData['data']['checkout_url'],
+                        'payment_method' => $request->payment_method,
                     ], 201);
                 } else {
                     // Restore stock if payment initialization fails

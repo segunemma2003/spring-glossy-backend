@@ -40,6 +40,12 @@ return [
     'secret_key' => env('PAYSTACK_SECRET_KEY'),
 ],
 
+'moniepoint' => [
+    'public_key' => env('MONIEPOINT_PUBLIC_KEY'),
+    'secret_key' => env('MONIEPOINT_SECRET_KEY'),
+    'merchant_id' => env('MONIEPOINT_MERCHANT_ID'),
+],
+
 's3' => [
     'key' => env('AWS_ACCESS_KEY_ID'),
     'secret' => env('AWS_SECRET_ACCESS_KEY'),
