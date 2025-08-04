@@ -56,6 +56,22 @@ fi
 echo -e "${BLUE}🗄️ Setting up PostgreSQL database...${NC}"
 heroku addons:create heroku-postgresql:essential-0 --app "$APP_NAME"
 
+# Configure SSL for PostgreSQL
+echo -e "${BLUE}🔒 Configuring SSL for PostgreSQL...${NC}"
+heroku config:set DB_SSLMODE=require --app "$APP_NAME"
+
+# Set basic Laravel configuration
+echo -e "${BLUE}⚙️ Setting basic Laravel configuration...${NC}"
+heroku config:set \
+    APP_ENV=production \
+    APP_DEBUG=false \
+    LOG_CHANNEL=stack \
+    DB_CONNECTION=pgsql \
+    CACHE_DRIVER=redis \
+    SESSION_DRIVER=redis \
+    QUEUE_CONNECTION=redis \
+    --app "$APP_NAME"
+
 # Set up Redis for caching and queues
 echo -e "${BLUE}🔴 Setting up Redis...${NC}"
 heroku addons:create heroku-redis:mini --app "$APP_NAME"

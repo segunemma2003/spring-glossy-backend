@@ -93,6 +93,7 @@ heroku config:set \
     APP_DEBUG=false \
     LOG_CHANNEL=stack \
     DB_CONNECTION=pgsql \
+    DB_SSLMODE=require \
     CACHE_DRIVER=redis \
     SESSION_DRIVER=redis \
     QUEUE_CONNECTION=redis \
@@ -290,6 +291,19 @@ heroku config:get MAILGUN_SECRET
 # Test email sending
 heroku run php artisan tinker
 # Then run: Mail::raw('Test email', function($msg) { $msg->to('test@example.com')->subject('Test'); });
+```
+
+#### **6. SSL Certificate Verification Failed**
+
+```bash
+# Quick fix using the provided script
+./fix_ssl.sh
+
+# Manual fix
+heroku config:set DB_SSLMODE=require --app your-app-name
+heroku run php artisan config:clear --app your-app-name
+heroku run php artisan config:cache --app your-app-name
+heroku restart --app your-app-name
 ```
 
 ## 🛠️ **Maintenance Commands**
