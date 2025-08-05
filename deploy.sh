@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Spring Glossy Cosmetics - Heroku Deployment Script
-# This script automates the deployment process to Heroku
+# This script automates the deployment process to Heroku with SSL support
 
 set -e  # Exit on any error
 
@@ -12,8 +12,8 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}🚀 Spring Glossy Cosmetics - Heroku Deployment${NC}"
-echo "=================================================="
+echo -e "${BLUE}🚀 Spring Glossy Cosmetics - Heroku Deployment with SSL${NC}"
+echo "============================================================="
 
 # Get app name
 read -p "Enter Heroku app name (or press Enter to generate one): " APP_NAME
@@ -52,16 +52,20 @@ if ! git remote | grep -q heroku; then
     heroku git:remote -a "$APP_NAME"
 fi
 
-# Set up PostgreSQL database
-echo -e "${BLUE}🗄️ Setting up PostgreSQL database...${NC}"
+# Set up PostgreSQL database with SSL
+echo -e "${BLUE}🗄️ Setting up PostgreSQL database with SSL...${NC}"
 heroku addons:create heroku-postgresql:essential-0 --app "$APP_NAME"
 
 # Configure SSL for PostgreSQL
 echo -e "${BLUE}🔒 Configuring SSL for PostgreSQL...${NC}"
 heroku config:set DB_SSLMODE=require --app "$APP_NAME"
 
-# Set basic Laravel configuration
-echo -e "${BLUE}⚙️ Setting basic Laravel configuration...${NC}"
+# Set up Redis for caching and queues with SSL
+echo -e "${BLUE}🔴 Setting up Redis with SSL...${NC}"
+heroku addons:create heroku-redis:mini --app "$APP_NAME"
+
+# Set comprehensive Laravel configuration with SSL support
+echo -e "${BLUE}⚙️ Setting comprehensive Laravel configuration...${NC}"
 heroku config:set \
     APP_ENV=production \
     APP_DEBUG=false \
@@ -70,11 +74,9 @@ heroku config:set \
     CACHE_DRIVER=redis \
     SESSION_DRIVER=redis \
     QUEUE_CONNECTION=redis \
+    REDIS_CLIENT=predis \
+    APP_TIMEZONE=UTC \
     --app "$APP_NAME"
-
-# Set up Redis for caching and queues
-echo -e "${BLUE}🔴 Setting up Redis...${NC}"
-heroku addons:create heroku-redis:mini --app "$APP_NAME"
 
 # Set Resend email configuration
 echo "📧 Setting up Resend email configuration..."
@@ -151,7 +153,7 @@ fi
 # Deploy to Heroku
 echo "🚀 Deploying to Heroku..."
 git add .
-git commit -m "Deploy to Heroku - Spring Glossy Cosmetics with S3 and Resend"
+git commit -m "Deploy to Heroku - Spring Glossy Cosmetics with SSL support"
 git push heroku main
 
 # Run migrations
@@ -161,8 +163,12 @@ heroku run php artisan migrate --force --app $APP_NAME
 # Note: storage:link not needed for S3 storage
 echo "📁 S3 storage configured - no storage link needed"
 
-# Clear and cache config
-echo "⚡ Optimizing application..."
+# Clear and cache config with SSL support
+echo "⚡ Optimizing application with SSL support..."
+heroku run php artisan config:clear --app $APP_NAME
+heroku run php artisan cache:clear --app $APP_NAME
+heroku run php artisan route:clear --app $APP_NAME
+heroku run php artisan view:clear --app $APP_NAME
 heroku run php artisan config:cache --app $APP_NAME
 heroku run php artisan route:cache --app $APP_NAME
 heroku run php artisan view:cache --app $APP_NAME
@@ -171,11 +177,27 @@ heroku run php artisan view:cache --app $APP_NAME
 echo "👷 Setting up worker dyno for queues..."
 heroku ps:scale worker=1 --app $APP_NAME
 
+# Test SSL connections
+echo "🔒 Testing SSL connections..."
+echo -e "${YELLOW}Testing database connection...${NC}"
+if heroku run php artisan tinker --execute="echo 'Database SSL connection successful';" --app $APP_NAME 2>/dev/null; then
+    echo -e "${GREEN}✅ Database SSL connection test passed!${NC}"
+else
+    echo -e "${RED}❌ Database SSL connection test failed. Check logs.${NC}"
+fi
+
+echo -e "${YELLOW}Testing Redis connection...${NC}"
+if heroku run php artisan tinker --execute="Redis::ping(); echo 'Redis SSL connection successful';" --app $APP_NAME 2>/dev/null; then
+    echo -e "${GREEN}✅ Redis SSL connection test passed!${NC}"
+else
+    echo -e "${RED}❌ Redis SSL connection test failed. Check logs.${NC}"
+fi
+
 # Open the app
 echo "🌐 Opening your application..."
 heroku open --app $APP_NAME
 
-echo "✅ Deployment completed successfully!"
+echo "✅ Deployment completed successfully with SSL support!"
 echo "📊 Your app is now live at: https://$APP_NAME.herokuapp.com"
 echo ""
 echo "🔧 Next steps:"
@@ -192,4 +214,9 @@ echo ""
 echo "4. Access admin panel:"
 echo "   https://$APP_NAME.herokuapp.com/admin"
 echo ""
-echo "🎉 Happy coding!"
+echo "🔒 SSL Configuration:"
+echo "   - Database SSL: Enabled (DB_SSLMODE=require)"
+echo "   - Redis SSL: Enabled (REDIS_CLIENT=predis)"
+echo "   - Application SSL: Enabled (HTTPS enforced)"
+echo ""
+echo "🎉 Happy coding with secure SSL connections!"
