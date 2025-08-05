@@ -59,25 +59,5 @@ class AppServiceProvider extends ServiceProvider
                 'connect_timeout' => 10,
             ]);
         });
-
-        // Log all HTTP request failures for debugging
-        Http::beforeSending(function ($request, $options) {
-            Log::info('HTTP Request', [
-                'url' => $request->url(),
-                'method' => $request->method(),
-                'verify' => $options['verify'] ?? 'default',
-            ]);
-        });
-
-        Http::afterSending(function ($request, $response) {
-            if (!$response->successful()) {
-                Log::error('HTTP Request Failed', [
-                    'url' => $request->url(),
-                    'method' => $request->method(),
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                ]);
-            }
-        });
     }
 }
