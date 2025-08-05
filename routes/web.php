@@ -14,9 +14,13 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return 'Laravel is working! Root route is accessible.';
 });
 
 Route::get('/test', function () {
     return 'Hello World! Laravel is working.';
+});
+
+Route::get('/simple', function () {
+    return 'Simple route test - Laravel is working!';
 });
