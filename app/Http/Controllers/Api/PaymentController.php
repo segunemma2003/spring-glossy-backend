@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Services\PaystackService;
-use App\Services\MonnifyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -14,12 +13,10 @@ use Illuminate\Support\Facades\Mail;
 class PaymentController extends Controller
 {
     protected $paystackService;
-    protected $monnifyService;
 
-    public function __construct(PaystackService $paystackService, MonnifyService $monnifyService)
+    public function __construct(PaystackService $paystackService)
     {
         $this->paystackService = $paystackService;
-        $this->monnifyService = $monnifyService;
     }
 
     /**
@@ -50,45 +47,13 @@ class PaymentController extends Controller
     }
 
     /**
-     * Monnify webhook handler
-     */
-    public function monnifyWebhook(Request $request)
-    {
-        Log::info('Monnify webhook received', $request->all());
-
-        $payload = $request->getContent();
-        $signature = $request->header('MNFY-SIGNATURE');
-
-        // Verify webhook signature
-        if (!$this->monnifyService->verifyWebhookSignature($payload, $signature)) {
-            Log::error('Monnify webhook signature verification failed');
-            return response()->json(['message' => 'Invalid signature'], 400);
-        }
-
-        $data = $request->all();
-
-        // Check if payment is successful
-        if ($data['paymentStatus'] === 'PAID') {
-            return $this->handleSuccessfulPayment($data['paymentReference'], 'monnify');
-        }
-
-        // Log other payment statuses for monitoring
-        Log::info('Monnify payment status: ' . $data['paymentStatus'], [
-            'reference' => $data['paymentReference'],
-            'status' => $data['paymentStatus']
-        ]);
-
-        return response()->json(['message' => 'Webhook processed']);
-    }
-
-    /**
      * Manual payment verification endpoint
      */
     public function verifyPayment(Request $request)
     {
         $request->validate([
             'reference' => 'required|string',
-            'payment_method' => 'required|in:paystack,monnify,transfer'
+            'payment_method' => 'required|in:paystack,transfer'
         ]);
 
         $reference = $request->reference;
@@ -96,37 +61,32 @@ class PaymentController extends Controller
 
         $order = Order::where('order_number', $reference)
             ->orWhere('paystack_reference', $reference)
-            ->orWhere('monnify_reference', $reference)
             ->first();
 
         if (!$order) {
             return response()->json(['message' => 'Order not found'], 404);
         }
 
-        if ($paymentMethod === 'transfer') {
-            // For bank transfer, just return the order status
-            return response()->json([
-                'order' => $order->load('items.product'),
-                'payment_status' => $order->payment_status,
-                'message' => 'Bank transfer verification requires manual admin review'
-            ]);
+        if ($order->status === 'paid') {
+            return response()->json(['message' => 'Payment already verified', 'order' => $order]);
         }
 
-        // Verify payment with payment gateway
-        $verificationResult = $paymentMethod === 'paystack'
-            ? $this->paystackService->verifyPayment($reference)
-            : $this->monnifyService->verifyPayment($reference);
+        try {
+            // Verify payment based on method
+            $verificationResult = $paymentMethod === 'paystack'
+                ? $this->paystackService->verifyPayment($reference)
+                : null;
 
-        if ($verificationResult['status'] && $verificationResult['data']['status'] === 'success') {
-            return $this->handleSuccessfulPayment($reference, $paymentMethod);
+            if ($verificationResult && $verificationResult['status']) {
+                return $this->handleSuccessfulPayment($reference, $paymentMethod);
+            }
+
+            return response()->json(['message' => 'Payment verification failed'], 400);
+
+        } catch (\Exception $e) {
+            Log::error('Payment verification error: ' . $e->getMessage());
+            return response()->json(['message' => 'Payment verification error'], 500);
         }
-
-        return response()->json([
-            'order' => $order->load('items.product'),
-            'payment_status' => $order->payment_status,
-            'verification_result' => $verificationResult,
-            'message' => 'Payment verification failed'
-        ]);
     }
 
     /**
@@ -134,48 +94,50 @@ class PaymentController extends Controller
      */
     private function handleSuccessfulPayment($reference, $paymentMethod)
     {
-        return DB::transaction(function () use ($reference, $paymentMethod) {
+        DB::beginTransaction();
+
+        try {
             $order = Order::where('order_number', $reference)
                 ->orWhere('paystack_reference', $reference)
-                ->orWhere('monnify_reference', $reference)
                 ->first();
 
             if (!$order) {
-                Log::error("Order not found for reference: {$reference}");
-                return response()->json(['message' => 'Order not found'], 404);
+                throw new \Exception('Order not found');
             }
 
-            if ($order->payment_status === Order::PAYMENT_STATUS_PAID) {
-                return response()->json([
-                    'message' => 'Payment already processed',
-                    'order' => $order->load('items.product')
-                ]);
+            if ($order->status === 'paid') {
+                return response()->json(['message' => 'Payment already processed', 'order' => $order]);
             }
 
-            // Update order payment status
+            // Update order status
             $order->update([
-                'payment_status' => Order::PAYMENT_STATUS_PAID,
-                'payment_reference' => $reference,
+                'status' => 'paid',
                 'paid_at' => now(),
-                'status' => Order::STATUS_PROCESSING,
+                'payment_method' => $paymentMethod
             ]);
 
-            // Send confirmation emails
-            Mail::to($order->user)->queue(new \App\Mail\OrderCreated($order));
-            Mail::to(config('app.admin_email', 'kemisolajim2018@gmail.com'))
-                ->queue(new \App\Mail\AdminOrderNotification($order));
+            // Send confirmation email
+            Mail::to($order->user->email)->send(new \App\Mail\OrderCreated($order));
 
-            Log::info("Payment successful for order: {$order->order_number} via {$paymentMethod}");
+            // Send admin notification
+            Mail::to(config('mail.admin_email', 'admin@example.com'))->send(new \App\Mail\AdminOrderNotification($order));
+
+            DB::commit();
 
             return response()->json([
                 'message' => 'Payment processed successfully',
-                'order' => $order->load('items.product')
+                'order' => $order
             ]);
-        });
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Payment processing error: ' . $e->getMessage());
+            return response()->json(['message' => 'Payment processing error'], 500);
+        }
     }
 
     /**
-     * Get payment methods available
+     * Get available payment methods
      */
     public function getPaymentMethods()
     {
@@ -184,20 +146,14 @@ class PaymentController extends Controller
                 [
                     'id' => 'paystack',
                     'name' => 'Paystack',
-                    'description' => 'Pay with card, bank transfer, USSD, etc.',
-                    'logo' => 'https://paystack.com/static/img/logo-blue.svg'
-                ],
-                [
-                    'id' => 'monnify',
-                    'name' => 'Monnify',
-                    'description' => 'Pay with Monnify wallet or card',
-                    'logo' => 'https://monnify.com/logo.png'
+                    'description' => 'Pay with card or bank transfer',
+                    'logo' => 'https://paystack.com/logo.png'
                 ],
                 [
                     'id' => 'transfer',
                     'name' => 'Bank Transfer',
-                    'description' => 'Pay via bank transfer and upload receipt',
-                    'logo' => null
+                    'description' => 'Pay via bank transfer',
+                    'logo' => 'https://example.com/bank-transfer.png'
                 ]
             ]
         ]);

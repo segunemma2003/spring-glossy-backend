@@ -152,10 +152,6 @@
                 <span class="status public">PUBLIC</span>
                 POST /api/webhooks/paystack - Paystack webhook
             </div>
-            <div class="endpoint">
-                <span class="status public">PUBLIC</span>
-                POST /api/webhooks/monnify - Monnify webhook
-            </div>
         </div>
 
         <div class="api-section">

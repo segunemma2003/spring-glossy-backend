@@ -24,7 +24,6 @@ class Order extends Model
         'shipping_address',
         'notes',
         'paystack_reference',
-        'monnify_reference',
         'paid_at',
         'admin_notes',
         'payment_receipt_path', // S3 path to receipt

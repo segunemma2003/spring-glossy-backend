@@ -11,7 +11,6 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Services\PaystackService;
-use App\Services\MonnifyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -21,12 +20,10 @@ use Illuminate\Support\Str;
 class OrderController extends Controller
 {
     protected $paystackService;
-    protected $monnifyService;
 
-    public function __construct(PaystackService $paystackService, MonnifyService $monnifyService)
+    public function __construct(PaystackService $paystackService)
     {
         $this->paystackService = $paystackService;
-        $this->monnifyService = $monnifyService;
     }
 
     public function index(Request $request)
@@ -51,7 +48,7 @@ class OrderController extends Controller
             'shipping_address.state' => 'required|string',
             'shipping_address.postal_code' => 'required|string',
             'shipping_address.country' => 'required|string',
-            'payment_method' => 'required|in:paystack,monnify,transfer',
+            'payment_method' => 'required|in:paystack,transfer',
             'notes' => 'nullable|string',
             'receipt' => 'required_if:payment_method,transfer|file|mimes:jpeg,png,jpg,pdf|max:2048',
         ]);
@@ -121,13 +118,11 @@ class OrderController extends Controller
                 }
             }
 
-            // If payment method is Paystack or Monnify, initialize payment
-            if (in_array($request->payment_method, ['paystack', 'monnify'])) {
-                $service = $request->payment_method === 'paystack' ? $this->paystackService : $this->monnifyService;
-
-                $paymentData = $service->initializePayment([
+            // If payment method is Paystack, initialize payment
+            if ($request->payment_method === 'paystack') {
+                $paymentData = $this->paystackService->initializePayment([
                     'email' => $request->user()->email,
-                    'amount' => $request->payment_method === 'paystack' ? $totalAmount * 100 : $totalAmount, // Paystack expects kobo, Monnify expects naira
+                    'amount' => $totalAmount * 100, // Paystack expects kobo
                     'reference' => $order->order_number,
                     'callback_url' => config('app.frontend_url') . '/checkout/success?orderId=' . $order->order_number,
                     'description' => 'Payment for order ' . $order->order_number,
@@ -139,9 +134,8 @@ class OrderController extends Controller
                 ]);
 
                 if ($paymentData['status']) {
-                    $referenceField = $request->payment_method === 'paystack' ? 'paystack_reference' : 'monnify_reference';
                     $order->update([
-                        $referenceField => $paymentData['data']['reference'],
+                        'paystack_reference' => $paymentData['data']['reference'],
                     ]);
 
                     return response()->json([

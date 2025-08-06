@@ -120,10 +120,6 @@ heroku config:set \
 echo "💳 Payment Gateway Configuration:"
 read -p "Enter Paystack Public Key (or press Enter to skip): " PAYSTACK_PUBLIC
 read -p "Enter Paystack Secret Key (or press Enter to skip): " PAYSTACK_SECRET
-read -p "Enter Monnify Public Key (or press Enter to skip): " MONNIFY_PUBLIC
-read -p "Enter Monnify Secret Key (or press Enter to skip): " MONNIFY_SECRET
-read -p "Enter Monnify Merchant ID (or press Enter to skip): " MONNIFY_MERCHANT
-read -p "Enter Monnify Contract Code (or press Enter to skip): " MONNIFY_CONTRACT
 
 # Set payment gateway configs if provided
 if [ ! -z "$PAYSTACK_PUBLIC" ]; then
@@ -132,22 +128,6 @@ fi
 
 if [ ! -z "$PAYSTACK_SECRET" ]; then
     heroku config:set PAYSTACK_SECRET_KEY="$PAYSTACK_SECRET" --app $APP_NAME
-fi
-
-if [ ! -z "$MONNIFY_PUBLIC" ]; then
-    heroku config:set MONNIFY_PUBLIC_KEY="$MONNIFY_PUBLIC" --app $APP_NAME
-fi
-
-if [ ! -z "$MONNIFY_SECRET" ]; then
-    heroku config:set MONNIFY_SECRET_KEY="$MONNIFY_SECRET" --app $APP_NAME
-fi
-
-if [ ! -z "$MONNIFY_MERCHANT" ]; then
-    heroku config:set MONNIFY_MERCHANT_ID="$MONNIFY_MERCHANT" --app $APP_NAME
-fi
-
-if [ ! -z "$MONNIFY_CONTRACT" ]; then
-    heroku config:set MONNIFY_CONTRACT_CODE="$MONNIFY_CONTRACT" --app $APP_NAME
 fi
 
 # Deploy to Heroku
@@ -203,7 +183,6 @@ echo ""
 echo "🔧 Next steps:"
 echo "1. Configure webhook URLs in your payment gateway dashboards:"
 echo "   - Paystack: https://$APP_NAME.herokuapp.com/api/webhooks/paystack"
-echo "   - Monnify: https://$APP_NAME.herokuapp.com/api/webhooks/monnify"
 echo ""
 echo "2. Set up your domain (optional):"
 echo "   heroku domains:add springglossy.com --app $APP_NAME"

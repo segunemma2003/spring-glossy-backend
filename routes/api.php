@@ -19,7 +19,6 @@ Route::get('/products/{product:slug}', [ProductController::class, 'show']);
 
 // Payment webhooks (public)
 Route::post('/webhooks/paystack', [PaymentController::class, 'paystackWebhook']);
-Route::post('/webhooks/monnify', [PaymentController::class, 'monnifyWebhook']);
 
 // Payment methods (public)
 Route::get('/payment-methods', [PaymentController::class, 'getPaymentMethods']);
