@@ -94,9 +94,17 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
+            // Heroku PostgreSQL SSL configuration
             'sslmode' => env('DB_SSLMODE', 'require'),
             'options' => [
-                PDO::ATTR_PERSISTENT => true,
+                // Enable persistent connections for better performance
+                PDO::ATTR_PERSISTENT => env('DB_PERSISTENT', true),
+                // Set connection timeout
+                PDO::ATTR_TIMEOUT => env('DB_TIMEOUT', 30),
+                // Set error mode
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                // SSL context for Heroku PostgreSQL
+                PDO::PGSQL_ATTR_DISABLE_PREPARES => true,
             ],
         ],
 
@@ -152,6 +160,14 @@ return [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
             'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_') . '_database_'),
             'persistent' => env('REDIS_PERSISTENT', false),
+            // SSL options for Heroku Redis (self-signed certificates)
+            'ssl' => [
+                'verify_peer' => env('REDIS_SSL_VERIFY_PEER', false),
+                'verify_peer_name' => env('REDIS_SSL_VERIFY_PEER_NAME', false),
+                'allow_self_signed' => env('REDIS_SSL_ALLOW_SELF_SIGNED', true),
+                'cafile' => env('REDIS_SSL_CAFILE', null),
+                'capath' => env('REDIS_SSL_CAPATH', null),
+            ],
         ],
 
         'default' => [
@@ -161,6 +177,15 @@ return [
             'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_DB', '0'),
+            // SSL context for Heroku Redis
+            'scheme' => env('REDIS_SCHEME', 'tcp'),
+            'context' => [
+                'ssl' => [
+                    'verify_peer' => env('REDIS_SSL_VERIFY_PEER', false),
+                    'verify_peer_name' => env('REDIS_SSL_VERIFY_PEER_NAME', false),
+                    'allow_self_signed' => env('REDIS_SSL_ALLOW_SELF_SIGNED', true),
+                ],
+            ],
         ],
 
         'cache' => [
@@ -170,6 +195,15 @@ return [
             'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_CACHE_DB', '1'),
+            // SSL context for Heroku Redis
+            'scheme' => env('REDIS_SCHEME', 'tcp'),
+            'context' => [
+                'ssl' => [
+                    'verify_peer' => env('REDIS_SSL_VERIFY_PEER', false),
+                    'verify_peer_name' => env('REDIS_SSL_VERIFY_PEER_NAME', false),
+                    'allow_self_signed' => env('REDIS_SSL_ALLOW_SELF_SIGNED', true),
+                ],
+            ],
         ],
 
     ],
