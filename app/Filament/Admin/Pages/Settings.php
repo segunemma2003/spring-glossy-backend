@@ -9,9 +9,6 @@ use Filament\Pages\Page;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Hidden;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 
 class Settings extends Page
@@ -23,8 +20,6 @@ class Settings extends Page
     protected static ?string $navigationLabel = 'Settings';
 
     protected static ?int $navigationSort = 100;
-
-    protected static string $view = 'filament.admin.pages.settings';
 
     public ?array $data = [];
 
@@ -203,5 +198,15 @@ class Settings extends Page
             ->title('Settings saved successfully')
             ->success()
             ->send();
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            \Filament\Actions\Action::make('save')
+                ->label('Save Settings')
+                ->submit('save')
+                ->color('primary'),
+        ];
     }
 }
