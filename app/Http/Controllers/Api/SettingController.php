@@ -26,6 +26,7 @@ class SettingController extends Controller
                 'whatsapp_number' => $settings['whatsapp_number'] ?? '',
                 'official_email' => $settings['official_email'] ?? '',
                 'address' => $settings['address'] ?? '',
+                'location' => $settings['location'] ?? '',
                 'business_hours' => $settings['business_hours'] ?? '',
                 'my_story' => $settings['my_story'] ?? '',
                 'privacy_policy' => $settings['privacy_policy'] ?? '',
