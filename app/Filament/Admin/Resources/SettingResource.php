@@ -33,11 +33,27 @@ class SettingResource extends Resource
             ->schema([
                 Section::make('Setting Information')
                     ->schema([
-                        TextInput::make('key')
-                            ->label('Key')
+                        Select::make('key')
+                            ->label('Setting Key')
+                            ->options([
+                                'caption' => 'Business Caption',
+                                'instagram_link' => 'Instagram Link',
+                                'facebook_link' => 'Facebook Link',
+                                'twitter_link' => 'Twitter Link',
+                                'phone_number' => 'Phone Number',
+                                'whatsapp_number' => 'WhatsApp Number',
+                                'official_email' => 'Official Email',
+                                'address' => 'Business Address',
+                                'location' => 'Business Location',
+                                'business_hours' => 'Business Hours',
+                                'my_story' => 'My Story',
+                                'privacy_policy' => 'Privacy Policy',
+                                'terms_of_service' => 'Terms of Service',
+                                'cookie_policy' => 'Cookie Policy',
+                            ])
                             ->required()
-                            ->unique(ignoreRecord: true)
-                            ->placeholder('setting_key_name'),
+                            ->searchable()
+                            ->unique(ignoreRecord: true),
 
                         Select::make('type')
                             ->label('Type')
@@ -53,7 +69,8 @@ class SettingResource extends Resource
                         Textarea::make('value')
                             ->label('Value')
                             ->placeholder('Enter the setting value')
-                            ->rows(4),
+                            ->rows(4)
+                            ->required(),
                     ])->columns(1),
             ]);
     }
@@ -63,14 +80,36 @@ class SettingResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('key')
+                    ->label('Setting')
+                    ->formatStateUsing(function ($state) {
+                        $labels = [
+                            'caption' => 'Business Caption',
+                            'instagram_link' => 'Instagram Link',
+                            'facebook_link' => 'Facebook Link',
+                            'twitter_link' => 'Twitter Link',
+                            'phone_number' => 'Phone Number',
+                            'whatsapp_number' => 'WhatsApp Number',
+                            'official_email' => 'Official Email',
+                            'address' => 'Business Address',
+                            'location' => 'Business Location',
+                            'business_hours' => 'Business Hours',
+                            'my_story' => 'My Story',
+                            'privacy_policy' => 'Privacy Policy',
+                            'terms_of_service' => 'Terms of Service',
+                            'cookie_policy' => 'Cookie Policy',
+                        ];
+                        return $labels[$state] ?? $state;
+                    })
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('value')
+                    ->label('Value')
                     ->limit(50)
                     ->searchable(),
                 Tables\Columns\TextColumn::make('type')
                     ->badge(),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Last Updated')
                     ->dateTime()
                     ->sortable(),
             ])
