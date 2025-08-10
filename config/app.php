@@ -56,30 +56,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Frontend URL
-    |--------------------------------------------------------------------------
-    |
-    | This URL is used for payment callbacks and redirects to the frontend
-    | application after successful payments.
-    |
-    */
-
-    'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Admin Email
-    |--------------------------------------------------------------------------
-    |
-    | This email address is used for sending admin notifications about
-    | new orders and other important events.
-    |
-    */
-
-    'admin_email' => env('ADMIN_EMAIL', 'kemisolajim2018@gmail.com'),
-
-    /*
-    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |
