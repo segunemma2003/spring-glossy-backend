@@ -11,10 +11,10 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::where('is_active', true);
+        $query = Product::where('is_active', true)->with('category');
 
-        if ($request->has('category')) {
-            $query->whereJsonContains('category', $request->category);
+        if ($request->has('category_id')) {
+            $query->where('category_id', $request->category_id);
         }
 
         if ($request->has('search')) {
@@ -41,7 +41,7 @@ class ProductController extends Controller
             return response()->json(['message' => 'Product not found'], 404);
         }
 
-        return new ProductResource($product);
+        return new ProductResource($product->load('category'));
     }
 
     public function featured()

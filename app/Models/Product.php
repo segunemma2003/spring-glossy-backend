@@ -16,7 +16,7 @@ class Product extends Model
         'slug',
         'description',
         'price',
-        'category',
+        'category_id',
         'colors',
         'is_new',
         'is_best_seller',
@@ -31,7 +31,6 @@ class Product extends Model
     protected function casts(): array
     {
         return [
-            'category' => 'array',
             'colors' => 'array',
             'images' => 'array',
             'is_new' => 'boolean',
@@ -39,6 +38,11 @@ class Product extends Model
             'is_active' => 'boolean',
             'price' => 'decimal:2',
         ];
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 
     public function orderItems()

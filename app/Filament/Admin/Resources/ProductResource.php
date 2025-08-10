@@ -68,29 +68,27 @@ class ProductResource extends Resource
 
                 Forms\Components\Section::make('Categories & Properties')
                     ->schema([
-                        Forms\Components\TagsInput::make('category')
-                            ->suggestions(['bestseller', 'shimmer', 'tinted', 'clear', 'moisturizing', 'plumping', 'holographic', 'scented']),
+                        Forms\Components\Select::make('category_id')
+                            ->label('Category')
+                            ->relationship('category', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->createOptionForm([
+                                Forms\Components\TextInput::make('name')
+                                    ->required()
+                                    ->maxLength(255),
+                                Forms\Components\TextInput::make('slug')
+                                    ->required()
+                                    ->maxLength(255),
+                                Forms\Components\Textarea::make('description')
+                                    ->maxLength(65535),
+                            ]),
                         Forms\Components\TagsInput::make('colors')
                             ->placeholder('Enter color hex codes like #FFB6C1'),
                         Forms\Components\Toggle::make('is_new'),
                         Forms\Components\Toggle::make('is_best_seller'),
                         Forms\Components\Toggle::make('is_active')
                             ->default(true),
-                    ])->columns(2),
-
-                Forms\Components\Section::make('Inventory & Details')
-                    ->schema([
-                        Forms\Components\TextInput::make('stock_quantity')
-                            ->numeric()
-                            ->default(0)
-                            ->required(),
-                        Forms\Components\TextInput::make('weight')
-                            ->suffix('g'),
-                        Forms\Components\TextInput::make('dimensions')
-                            ->placeholder('L x W x H (cm)'),
-                        Forms\Components\TextInput::make('sku')
-                            ->disabled()
-                            ->dehydrated(false),
                     ])->columns(2),
             ]);
     }
@@ -117,20 +115,17 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('price')
                     ->money('NGN')
                     ->sortable(),
-                Tables\Columns\TagsColumn::make('category'),
+                Tables\Columns\TextColumn::make('category.name')
+                    ->label('Category')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\IconColumn::make('is_new')
                     ->boolean()
                     ->toggleable(),
                 Tables\Columns\IconColumn::make('is_best_seller')
                     ->boolean()
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('stock_quantity')
-                    ->sortable()
-                    ->color(fn (int $state): string => match (true) {
-                        $state > 20 => 'success',
-                        $state > 5 => 'warning',
-                        default => 'danger',
-                    }),
+
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
                 Tables\Columns\TextColumn::make('created_at')
@@ -142,9 +137,7 @@ class ProductResource extends Resource
                 Tables\Filters\TernaryFilter::make('is_active'),
                 Tables\Filters\TernaryFilter::make('is_new'),
                 Tables\Filters\TernaryFilter::make('is_best_seller'),
-                Tables\Filters\Filter::make('low_stock')
-                    ->query(fn ($query) => $query->where('stock_quantity', '<', 10))
-                    ->label('Low Stock'),
+
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

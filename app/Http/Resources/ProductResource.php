@@ -16,16 +16,21 @@ class ProductResource extends JsonResource
             'sku' => $this->sku,
             'description' => $this->description,
             'price' => (float) $this->price,
-            'category' => $this->category,
+            'category' => $this->whenLoaded('category', function () {
+                return [
+                    'id' => $this->category->id,
+                    'name' => $this->category->name,
+                    'slug' => $this->category->slug,
+                    'description' => $this->category->description,
+                    'image' => $this->category->image,
+                ];
+            }),
             'colors' => $this->colors,
             'images' => $this->image_urls,
             'image_url' => $this->image_url,
             'is_new' => $this->is_new,
             'is_best_seller' => $this->is_best_seller,
             'is_active' => $this->is_active,
-            'stock_quantity' => $this->stock_quantity,
-            'weight' => $this->weight,
-            'dimensions' => $this->dimensions,
             'created_at' => $this->created_at,
         ];
     }
