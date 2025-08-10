@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\SettingResource\Pages;
+namespace App\Filament\Admin\Resources\SettingResource\Pages;
 
-use App\Filament\Resources\SettingResource;
+use App\Filament\Admin\Resources\SettingResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateSetting extends CreateRecord
