@@ -46,4 +46,20 @@ class Setting extends Model
     {
         return static::pluck('value', 'key')->toArray();
     }
+
+    /**
+     * Get setting by key with fallback
+     */
+    public static function get(string $key, $default = null)
+    {
+        return static::where('key', $key)->value('value') ?? $default;
+    }
+
+    /**
+     * Set setting by key
+     */
+    public static function set(string $key, $value): void
+    {
+        static::updateOrCreate(['key' => $key], ['value' => $value]);
+    }
 }

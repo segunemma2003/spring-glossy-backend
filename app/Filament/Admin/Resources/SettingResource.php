@@ -31,135 +31,30 @@ class SettingResource extends Resource
     {
         return $form
             ->schema([
-                Section::make('General Information')
+                Section::make('Setting Information')
                     ->schema([
-                        TextInput::make('caption')
-                            ->label('Caption')
-                            ->placeholder('Enter your business caption')
-                            ->maxLength(255),
+                        TextInput::make('key')
+                            ->label('Key')
+                            ->required()
+                            ->unique(ignoreRecord: true)
+                            ->placeholder('setting_key_name'),
 
-                        TextInput::make('instagram_link')
-                            ->label('Instagram Link')
-                            ->url()
-                            ->placeholder('https://instagram.com/yourbusiness'),
-
-                        TextInput::make('facebook_link')
-                            ->label('Facebook Link')
-                            ->url()
-                            ->placeholder('https://facebook.com/yourbusiness'),
-
-                        TextInput::make('twitter_link')
-                            ->label('Twitter Link')
-                            ->url()
-                            ->placeholder('https://twitter.com/yourbusiness'),
-                    ])->columns(2),
-
-                Section::make('Contact Information')
-                    ->schema([
-                        TextInput::make('phone_number')
-                            ->label('Phone Number')
-                            ->tel()
-                            ->placeholder('+234 123 456 7890'),
-
-                        TextInput::make('whatsapp_number')
-                            ->label('WhatsApp Number')
-                            ->tel()
-                            ->placeholder('+234 123 456 7890'),
-
-                        TextInput::make('official_email')
-                            ->label('Official Email')
-                            ->email()
-                            ->placeholder('info@springglossy.com.ng'),
-
-                        TextInput::make('address')
-                            ->label('Address')
-                            ->placeholder('Enter your business address')
-                            ->maxLength(500),
-                    ])->columns(2),
-
-                Section::make('Business Hours')
-                    ->schema([
-                        RichEditor::make('business_hours')
-                            ->label('Business Hours')
-                            ->placeholder('Enter your business hours information')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'bulletList',
-                                'orderedList',
+                        Select::make('type')
+                            ->label('Type')
+                            ->options([
+                                'string' => 'String',
+                                'text' => 'Text',
+                                'rich_text' => 'Rich Text',
+                                'json' => 'JSON',
                             ])
-                            ->columnSpanFull(),
-                    ]),
+                            ->default('string')
+                            ->required(),
 
-                Section::make('My Story')
-                    ->schema([
-                        RichEditor::make('my_story')
-                            ->label('My Story')
-                            ->placeholder('Tell your business story')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'link',
-                                'bulletList',
-                                'orderedList',
-                                'h2',
-                                'h3',
-                            ])
-                            ->columnSpanFull(),
-                    ]),
-
-                Section::make('Legal Documents')
-                    ->schema([
-                        RichEditor::make('privacy_policy')
-                            ->label('Privacy Policy')
-                            ->placeholder('Enter your privacy policy content')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'link',
-                                'bulletList',
-                                'orderedList',
-                                'h2',
-                                'h3',
-                                'h4',
-                            ])
-                            ->columnSpanFull(),
-
-                        RichEditor::make('terms_of_service')
-                            ->label('Terms of Service')
-                            ->placeholder('Enter your terms of service content')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'link',
-                                'bulletList',
-                                'orderedList',
-                                'h2',
-                                'h3',
-                                'h4',
-                            ])
-                            ->columnSpanFull(),
-
-                        RichEditor::make('cookie_policy')
-                            ->label('Cookie Policy')
-                            ->placeholder('Enter your cookie policy content')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'link',
-                                'bulletList',
-                                'orderedList',
-                                'h2',
-                                'h3',
-                                'h4',
-                            ])
-                            ->columnSpanFull(),
-                    ]),
+                        Textarea::make('value')
+                            ->label('Value')
+                            ->placeholder('Enter the setting value')
+                            ->rows(4),
+                    ])->columns(1),
             ]);
     }
 
@@ -185,6 +80,7 @@ class SettingResource extends Resource
                         'string' => 'String',
                         'text' => 'Text',
                         'rich_text' => 'Rich Text',
+                        'json' => 'JSON',
                     ]),
             ])
             ->actions([
