@@ -60,7 +60,9 @@ class ProductResource extends Resource
                                 '4:3',
                                 '16:9',
                             ])
-                            ->resize(800, 800)
+                            ->imageResizeMode('cover')
+                            ->imageResizeTargetWidth(800)
+                            ->imageResizeTargetHeight(800)
                             ->columnSpanFull(),
                     ]),
 
