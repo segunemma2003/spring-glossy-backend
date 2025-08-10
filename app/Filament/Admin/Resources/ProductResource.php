@@ -60,7 +60,6 @@ class ProductResource extends Resource
                                 '4:3',
                                 '16:9',
                             ])
-                            ->optimize('webp')
                             ->resize(800, 800)
                             ->columnSpanFull(),
                     ]),
