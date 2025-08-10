@@ -53,7 +53,6 @@ class ProductResource extends Resource
                             ->reorderable()
                             ->disk('s3')
                             ->directory('products')
-                            ->visibility('public')
                             ->imageEditor()
                             ->imageEditorAspectRatios([
                                 '1:1',

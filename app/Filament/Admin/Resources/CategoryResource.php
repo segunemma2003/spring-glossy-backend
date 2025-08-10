@@ -46,7 +46,6 @@ class CategoryResource extends Resource
                             ->image()
                             ->disk('s3')
                             ->directory('categories')
-                            ->visibility('public')
                             ->imageEditor()
                             ->imageEditorAspectRatios([
                                 '1:1',
